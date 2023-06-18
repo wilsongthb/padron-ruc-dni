@@ -14,12 +14,10 @@ class CreatePersonasTable extends Migration
     public function up()
     {
         Schema::create('personas', function (Blueprint $table) {
-          $table->id();
-          $table->char('ruc');
-          $table->char('dni', 8)->nullable()->index();
-          $table->string('nombres', 150)->nullable();
+          $table->char('dni', 8)->primary();
           $table->string('ap_paterno', 45)->nullable();
           $table->string('ap_materno', 45)->nullable();
+          $table->string('nombres', 150)->nullable();
         });
     }
 

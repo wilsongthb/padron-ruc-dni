@@ -61,29 +61,44 @@ class PersonasSeeder extends Seeder
           $linea = fgets($file_handle);
           $linea = mb_convert_encoding($linea, 'utf-8', 'iso-8859-1');
           $row = explode("|", $linea);
-          // print_r($row);
-          $tipoPer = substr($row[0], 0, 1) === '1' ? 'F' : 'J';
-          $casoRaro = 0;
+          $ruc = $row[0];
           $nombreCompleto = $row[1];
-          if ($tipoPer === "F") {
+          
+          // inicia evaluacion
+          $tipoPer = substr($row[0], 0, 1) === '1' ? 'F' : 'J';
+          $esDni = substr($row[0], 0, 2) === '10';
+          $casoRaro = 0;
+
+          if ($tipoPer === "F" && $esDni) {
+            $nombrePartes = [];
+            // el caso DE LA TORRE POBLET ROQUE
             $nombrePartes = explode(" ", $nombreCompleto);
-            if (strpos($nombreCompleto, "-")) {
-              $nombrePartes = explode("-", $nombreCompleto);
-            }
-            if (count($nombrePartes) > 1) {
+            if(strpos($nombreCompleto, "DE LA") === 0 && count($nombrePartes) >  3) {
+              $apPaterno = implode(" ", array_slice($nombrePartes, 0, 3));
+              $apMaterno = $nombrePartes[3];
+              $nombres = implode(" ", array_slice($nombrePartes, 4));
+            } else if (count($nombrePartes) >= 3) {
+              // caso normal
               $apPaterno = $nombrePartes[0];
               $apMaterno = $nombrePartes[1];
               $nombres = implode(" ", array_slice($nombrePartes, 2));
-            } else {
+            } else if (count($nombrePartes) == 2) {
               $apPaterno = $nombrePartes[0];
-              $apMaterno = $nombrePartes[0];
-              $nombres = $nombrePartes[0];
+              $apMaterno = "";
+              $nombres = $nombrePartes[1];
+            } else if (substr_count($nombreCompleto, "-") >= 1 && substr_count($nombreCompleto, " ") == 0) {
+              $nombrePartes = explode("-", $nombreCompleto);
+              // caso normal
+              $apPaterno = $nombrePartes[0];
+              $apMaterno = $nombrePartes[1];
+              $nombres = implode(" ", array_slice($nombrePartes, 2));             
+            } else {
+              // throw new \Exception("No se como interpretar esto: $ruc $nombreCompleto", 1);
+              $apPaterno = "";
+              $apMaterno = "";
+              $nombres = $nombreCompleto;
             }
-            // print_r(
-            //   compact('apPaterno', 'apMaterno', 'nombres', 'nombreCompleto')
-            // );
             array_push($listaParaInsertar, [
-              'ruc' => $row[0],
               'dni' => $tipoPer == 'F' ? substr($row[0], 2, 8) : null,
               'nombres' => substr($nombres, 0, 150),
               'ap_paterno' => substr($apPaterno, 0, 45),
@@ -92,6 +107,8 @@ class PersonasSeeder extends Seeder
           }
         } catch (\Throwable $error) {
           // handle error
+          // throw $error; // lanza el error
+          // exit;
           $cantidadErrores++;
         }
         // if ($num > 1000000) return;
