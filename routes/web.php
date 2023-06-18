@@ -15,10 +15,22 @@ use Illuminate\Support\Facades\DB;
 |
 */
 
-$router->get('/', function () use ($router) {
-    return $router->app->version();
-});
+const CORS_HEADERS = [
+  'Access-Control-Allow-Origin' => '*',
+];
 
-$router->get('/dni/{dni}', function($dni) {
-  return response()->json(DB::table('personas')->where('dni', $dni)->first());
+
+$router->options('/{a}/{b}', function () {
+  return response(null, 200, CORS_HEADERS);
+});
+$router->get('/', function () use ($router) {
+  return $router->app->version();
+});
+$router->get('/dni/{dni}', function ($dni) {
+  $persona = DB::table('personas')->where('dni', $dni)->first();
+  if (isset($persona)) {
+    return response()->json($persona, 200, CORS_HEADERS);
+  } else {
+    return response()->json(['message' => "No se encontro a la persona"], 404);
+  }
 });
