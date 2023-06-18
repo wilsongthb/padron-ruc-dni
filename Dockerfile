@@ -1,4 +1,4 @@
-FROM php:7.4-apache
+FROM php:8.2-apache
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && apt install -y curl \
   && curl -sS https://getcomposer.org/installer | php \
