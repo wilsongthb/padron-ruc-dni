@@ -27,6 +27,9 @@ $router->get('/', function () use ($router) {
   return $router->app->version();
 });
 $router->get('/dni/{dni}', function ($dni) {
+  if(request()->header('Authorization') !== env("APP_PUBLIC_TOKEN")) {
+    return response()->json(['message' => "No autorizado"], 401);
+  }
   $persona = DB::table('personas')->where('dni', $dni)->first();
   if (isset($persona)) {
     return response()->json($persona, 200, CORS_HEADERS);
